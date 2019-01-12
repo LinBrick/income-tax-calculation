@@ -5,6 +5,7 @@ import Index from '@/components/Index'
 Vue.use(Router)
 
 export default new Router({
+  base: '/income-tax-calculation-view/',
   routes: [
     {
       path: '/',

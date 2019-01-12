@@ -50,7 +50,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: './income-tax-calculation-view/',
+    assetsPublicPath: '/income-tax-calculation-view/',
 
     /**
      * Source Maps
