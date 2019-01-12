@@ -3,16 +3,24 @@
   <el-col :span="8">
     <el-form ref="form" :rules="rules" :model="form" label-width="100px">
       <el-form-item label="税前工资" prop="grossSalary">
-        <el-input v-model.number="form.grossSalary"></el-input>
+        <el-input v-model.number="form.grossSalary" maxlength="12">
+          <template slot="append">元</template>
+        </el-input>
       </el-form-item>
       <el-form-item label="五险一金" prop="insurancesPrice">
-        <el-input v-model.number="form.insurancesPrice"></el-input>
+        <el-input v-model.number="form.insurancesPrice" maxlength="10">
+          <template slot="append">元</template>
+        </el-input>
       </el-form-item>
       <el-form-item label="专项扣除" prop="specialDeduction">
-        <el-input v-model.number="form.specialDeduction"></el-input>
+        <el-input v-model.number="form.specialDeduction" maxlength="10">
+          <template slot="append">元</template>
+        </el-input>
       </el-form-item>
       <el-form-item label="起 征 点">
-        <el-input v-model.number="form.threshold" disabled></el-input>
+        <el-input v-model.number="form.threshold" disabled>
+          <template slot="append">元</template>
+        </el-input>
       </el-form-item>
       <!-- <el-form-item label="所有项不变">
         <el-switch v-model="form.fixed"></el-switch>
@@ -27,22 +35,32 @@
   <el-col :span="16">
     <el-table :data="form.dataList" style="width: 100%">
     <el-table-column  prop="index" label="月份" width="180"> </el-table-column>
-    <el-table-column prop="grossSalary" label="税前工资"> </el-table-column>
-    <el-table-column prop="insurancesPrice" label="五险一金"> </el-table-column>
-    <el-table-column prop="specialDeduction" label="专项扣除"> </el-table-column>
-    <el-table-column label="起 征 点">
+    <el-table-column label="税前工资">
       <template slot-scope="scope">
-        {{ scope.row.threshold.toFixed(2) }}
+        {{ scope.row.grossSalary.toFixed(2) }}元
       </template>
     </el-table-column>
+    <el-table-column label="五险一金">
+      <template slot-scope="scope">
+        {{ scope.row.insurancesPrice.toFixed(2) }}元
+      </template>
+    </el-table-column>
+    <el-table-column label="专项扣除">
+      <template slot-scope="scope">
+        {{ scope.row.specialDeduction.toFixed(2) }}元
+      </template>
+    </el-table-column>
+    <!-- <el-table-column prop="grossSalary" label="税前工资"> </el-table-column>
+    <el-table-column prop="insurancesPrice" label="五险一金"> </el-table-column>
+    <el-table-column prop="specialDeduction" label="专项扣除"> </el-table-column> -->
     <el-table-column label="最终个税">
       <template slot-scope="scope">
-        {{ scope.row.tax.toFixed(2) }}
+        {{ scope.row.tax.toFixed(2) }}元
       </template>
     </el-table-column>
     <el-table-column label="税后工资">
       <template slot-scope="scope">
-        {{ scope.row.afterTax.toFixed(2) }}
+        {{ scope.row.afterTax.toFixed(2) }}元
       </template>
     </el-table-column>
   </el-table>
@@ -80,60 +98,65 @@ export default {
   methods: {
     // 一键生成
     build () {
-      this.form.dataList = []
-      for (let i = 1; i <= 12; i++) {
-        this.onSubmit()
-      }
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          this.form.dataList = []
+          for (let i = 1; i <= 12; i++) {
+            this.perform()
+          }
+        }
+      })
     },
     // 单月记录创建
     onSubmit () {
-      let action = () => {
-        let length = this.form.dataList.length
-        if (length === 12) {
-          this.$message({
-            message: '不能超过12条记录',
-            type: 'warning'
-          })
-          return
-        }
-        if (length === 0) {
-          let taxAmount = this.form.grossSalary - this.form.insurancesPrice - this.form.specialDeduction - this.form.threshold
-          let tax = this.calculationTax(taxAmount)
-          this.form.dataList.push({
-            index: '1月份',
-            grossSalary: this.form.grossSalary,
-            insurancesPrice: this.form.insurancesPrice,
-            specialDeduction: this.form.specialDeduction,
-            threshold: this.form.threshold,
-            taxAmount: taxAmount,
-            tax: tax > 0 ? tax : 0,
-            afterTax: this.form.grossSalary - this.form.insurancesPrice - tax
-          })
-        } else {
-          let totalGrossSalary = this.getValueTotal('grossSalary', this.form.grossSalary)
-          let totalInsurancesPrice = this.getValueTotal('insurancesPrice', this.form.insurancesPrice)
-          let totalSpecialDeduction = this.getValueTotal('specialDeduction', this.form.specialDeduction)
-          let totalThreshold = this.getValueTotal('threshold', this.form.threshold)
-          let totalTaxAmount = totalGrossSalary - totalInsurancesPrice - totalSpecialDeduction - totalThreshold
-          let totalTax = this.calculationTax(totalTaxAmount)
-          let currentTax = totalTax - this.getValueTotal('tax')
-          this.form.dataList.push({
-            index: (length + 1) + '月份',
-            grossSalary: this.form.grossSalary,
-            insurancesPrice: this.form.insurancesPrice,
-            specialDeduction: this.form.specialDeduction,
-            threshold: this.form.threshold,
-            taxAmount: totalTaxAmount,
-            tax: currentTax > 0 ? currentTax : 0,
-            afterTax: this.form.grossSalary - this.form.insurancesPrice - currentTax
-          })
-        }
-      }
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          action()
+          if (length === 12) {
+            this.$message({
+              message: '不能超过12条记录',
+              type: 'warning'
+            })
+            return
+          }
+          this.perform()
         }
       })
+    },
+    // 执行计算结果
+    perform () {
+      let length = this.form.dataList.length
+      if (length === 0) {
+        let taxAmount = this.form.grossSalary - this.form.insurancesPrice - this.form.specialDeduction - this.form.threshold
+        let tax = this.calculationTax(taxAmount)
+        this.form.dataList.push({
+          index: '1月份',
+          grossSalary: this.form.grossSalary,
+          insurancesPrice: this.form.insurancesPrice,
+          specialDeduction: this.form.specialDeduction,
+          threshold: this.form.threshold,
+          taxAmount: taxAmount,
+          tax: tax > 0 ? tax : 0,
+          afterTax: this.form.grossSalary - this.form.insurancesPrice - tax
+        })
+      } else {
+        let totalGrossSalary = this.getValueTotal('grossSalary', this.form.grossSalary)
+        let totalInsurancesPrice = this.getValueTotal('insurancesPrice', this.form.insurancesPrice)
+        let totalSpecialDeduction = this.getValueTotal('specialDeduction', this.form.specialDeduction)
+        let totalThreshold = this.getValueTotal('threshold', this.form.threshold)
+        let totalTaxAmount = totalGrossSalary - totalInsurancesPrice - totalSpecialDeduction - totalThreshold
+        let totalTax = this.calculationTax(totalTaxAmount)
+        let currentTax = totalTax - this.getValueTotal('tax')
+        this.form.dataList.push({
+          index: (length + 1) + '月份',
+          grossSalary: this.form.grossSalary,
+          insurancesPrice: this.form.insurancesPrice,
+          specialDeduction: this.form.specialDeduction,
+          threshold: this.form.threshold,
+          taxAmount: totalTaxAmount,
+          tax: currentTax > 0 ? currentTax : 0,
+          afterTax: this.form.grossSalary - this.form.insurancesPrice - currentTax
+        })
+      }
     },
     // 计算个税
     calculationTax (num) {
@@ -172,10 +195,3 @@ export default {
   }
 }
 </script>
-
-<style>
-.page-container{
-  width:1000px;
-  margin:0 auto;
-}
-</style>
