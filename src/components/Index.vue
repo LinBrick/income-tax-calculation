@@ -17,7 +17,7 @@
           <template slot="append">元</template>
         </el-input>
       </el-form-item>
-      <el-form-item label="起 征 点">
+      <el-form-item label="起征点">
         <el-input v-model.number="form.threshold" disabled>
           <template slot="append">元</template>
         </el-input>
@@ -72,7 +72,7 @@ export default {
   data () {
     return {
       form: {
-        grossSalary: null,
+        grossSalary: 2000,
         insurancesPrice: 0,
         specialDeduction: 0,
         threshold: 5000,
@@ -111,7 +111,7 @@ export default {
     onSubmit () {
       this.$refs['form'].validate((valid) => {
         if (valid) {
-          if (length === 12) {
+          if (this.form.dataList.length === 12) {
             this.$message({
               message: '不能超过12条记录',
               type: 'warning'
@@ -126,26 +126,30 @@ export default {
     perform () {
       let length = this.form.dataList.length
       if (length === 0) {
-        let taxAmount = this.form.grossSalary - this.form.insurancesPrice - this.form.specialDeduction - this.form.threshold
-        let tax = this.calculationTax(taxAmount)
+        let freeAmount = this.form.insurancesPrice + this.form.specialDeduction + this.form.threshold// 免额(五险+专项+起征点)
+        let difference = this.form.grossSalary - freeAmount// 差额
+        let taxAmount = difference > 0 ? difference : 0// 缴纳金额
+        let tax = difference > 0 ? this.calculationTax(taxAmount) : 0// 个税
         this.form.dataList.push({
           index: '1月份',
-          grossSalary: this.form.grossSalary,
-          insurancesPrice: this.form.insurancesPrice,
-          specialDeduction: this.form.specialDeduction,
-          threshold: this.form.threshold,
-          taxAmount: taxAmount,
-          tax: tax > 0 ? tax : 0,
-          afterTax: this.form.grossSalary - this.form.insurancesPrice - tax
+          grossSalary: this.form.grossSalary, // 税前
+          insurancesPrice: this.form.insurancesPrice, // 五险一金
+          specialDeduction: this.form.specialDeduction, // 专项扣除
+          threshold: this.form.threshold, // 起征点
+          taxAmount: taxAmount, // 缴纳金额
+          tax: tax > 0 ? tax : 0, // 个税
+          afterTax: this.form.grossSalary - this.form.insurancesPrice - tax// 税后(税前-五险-个税)
         })
       } else {
-        let totalGrossSalary = this.getValueTotal('grossSalary', this.form.grossSalary)
-        let totalInsurancesPrice = this.getValueTotal('insurancesPrice', this.form.insurancesPrice)
-        let totalSpecialDeduction = this.getValueTotal('specialDeduction', this.form.specialDeduction)
-        let totalThreshold = this.getValueTotal('threshold', this.form.threshold)
-        let totalTaxAmount = totalGrossSalary - totalInsurancesPrice - totalSpecialDeduction - totalThreshold
-        let totalTax = this.calculationTax(totalTaxAmount)
-        let currentTax = totalTax - this.getValueTotal('tax')
+        let totalGrossSalary = this.getValueTotal('grossSalary', this.form.grossSalary)// 总计税前
+        let totalInsurancesPrice = this.getValueTotal('insurancesPrice', this.form.insurancesPrice)// 总计五险一金
+        let totalSpecialDeduction = this.getValueTotal('specialDeduction', this.form.specialDeduction)// 总计专项扣除
+        let totalThreshold = this.getValueTotal('threshold', this.form.threshold)// 总计起征点
+        let totalFreeAmount = totalInsurancesPrice + totalSpecialDeduction + totalThreshold// 免额(五险+专项+起征点)
+        let totalDifference = totalGrossSalary - totalFreeAmount// 差额
+        let totalTaxAmount = totalDifference > 0 ? totalDifference : 0// 缴纳金额
+        let totalTax = totalDifference > 0 ? this.calculationTax(totalTaxAmount) : 0// 个税
+        let currentTax = totalTax - this.getValueTotal('tax')// 减去今年内已交的税
         this.form.dataList.push({
           index: (length + 1) + '月份',
           grossSalary: this.form.grossSalary,
