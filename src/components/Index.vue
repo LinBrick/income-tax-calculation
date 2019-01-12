@@ -1,22 +1,22 @@
 <template>
 <el-row :gutter="20">
   <el-col :span="8">
-    <el-form ref="form" :model="form" label-width="100px">
-      <el-form-item label="税前工资">
+    <el-form ref="form" :rules="rules" :model="form" label-width="100px">
+      <el-form-item label="税前工资" prop="grossSalary">
         <el-input v-model.number="form.grossSalary"></el-input>
       </el-form-item>
-      <el-form-item label="五险一金">
+      <el-form-item label="五险一金" prop="insurancesPrice">
         <el-input v-model.number="form.insurancesPrice"></el-input>
       </el-form-item>
-      <el-form-item label="专项扣除">
+      <el-form-item label="专项扣除" prop="specialDeduction">
         <el-input v-model.number="form.specialDeduction"></el-input>
       </el-form-item>
       <el-form-item label="起 征 点">
         <el-input v-model.number="form.threshold" disabled></el-input>
       </el-form-item>
-      <el-form-item label="所有项不变">
+      <!-- <el-form-item label="所有项不变">
         <el-switch v-model="form.fixed"></el-switch>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item>
         <el-button type="primary" @click="build">一键生成</el-button>
         <el-button type="primary" @click="onSubmit">立即创建</el-button>
@@ -54,61 +54,86 @@ export default {
   data () {
     return {
       form: {
-        grossSalary: 30000,
-        insurancesPrice: 4500,
-        specialDeduction: 2000,
+        grossSalary: null,
+        insurancesPrice: 0,
+        specialDeduction: 0,
         threshold: 5000,
-        fixed: true,
+        // fixed: true,
         dataList: []
+      },
+      rules: {
+        grossSalary: [
+          { required: true, message: '必填项', trigger: 'change' },
+          { type: 'number', message: '必须为数字值', trigger: 'change' }
+        ],
+        insurancesPrice: [
+          { required: true, message: '必填项', trigger: 'change' },
+          { type: 'number', message: '必须为数字值', trigger: 'change' }
+        ],
+        specialDeduction: [
+          { required: true, message: '必填项', trigger: 'change' },
+          { type: 'number', message: '必须为数字值', trigger: 'change' }
+        ]
       }
     }
   },
   methods: {
     // 一键生成
     build () {
+      this.form.dataList = []
       for (let i = 1; i <= 12; i++) {
         this.onSubmit()
       }
     },
     // 单月记录创建
     onSubmit () {
-      let length = this.form.dataList.length
-      if (length === 12) {
-        alert('不能超过12条记录')
-        return
+      let action = () => {
+        let length = this.form.dataList.length
+        if (length === 12) {
+          this.$message({
+            message: '不能超过12条记录',
+            type: 'warning'
+          })
+          return
+        }
+        if (length === 0) {
+          let taxAmount = this.form.grossSalary - this.form.insurancesPrice - this.form.specialDeduction - this.form.threshold
+          let tax = this.calculationTax(taxAmount)
+          this.form.dataList.push({
+            index: '1月份',
+            grossSalary: this.form.grossSalary,
+            insurancesPrice: this.form.insurancesPrice,
+            specialDeduction: this.form.specialDeduction,
+            threshold: this.form.threshold,
+            taxAmount: taxAmount,
+            tax: tax > 0 ? tax : 0,
+            afterTax: this.form.grossSalary - this.form.insurancesPrice - tax
+          })
+        } else {
+          let totalGrossSalary = this.getValueTotal('grossSalary', this.form.grossSalary)
+          let totalInsurancesPrice = this.getValueTotal('insurancesPrice', this.form.insurancesPrice)
+          let totalSpecialDeduction = this.getValueTotal('specialDeduction', this.form.specialDeduction)
+          let totalThreshold = this.getValueTotal('threshold', this.form.threshold)
+          let totalTaxAmount = totalGrossSalary - totalInsurancesPrice - totalSpecialDeduction - totalThreshold
+          let totalTax = this.calculationTax(totalTaxAmount)
+          let currentTax = totalTax - this.getValueTotal('tax')
+          this.form.dataList.push({
+            index: (length + 1) + '月份',
+            grossSalary: this.form.grossSalary,
+            insurancesPrice: this.form.insurancesPrice,
+            specialDeduction: this.form.specialDeduction,
+            threshold: this.form.threshold,
+            taxAmount: totalTaxAmount,
+            tax: currentTax > 0 ? currentTax : 0,
+            afterTax: this.form.grossSalary - this.form.insurancesPrice - currentTax
+          })
+        }
       }
-      if (length === 0) {
-        let taxAmount = this.form.grossSalary - this.form.insurancesPrice - this.form.specialDeduction - this.form.threshold
-        let tax = this.calculationTax(taxAmount)
-        this.form.dataList.push({
-          index: '1月份',
-          grossSalary: this.form.grossSalary,
-          insurancesPrice: this.form.insurancesPrice,
-          specialDeduction: this.form.specialDeduction,
-          threshold: this.form.threshold,
-          taxAmount: taxAmount,
-          tax: tax,
-          afterTax: this.form.grossSalary - this.form.insurancesPrice - tax
-        })
-      } else {
-        let totalGrossSalary = this.getValueTotal('grossSalary', this.form.grossSalary)
-        let totalInsurancesPrice = this.getValueTotal('insurancesPrice', this.form.insurancesPrice)
-        let totalSpecialDeduction = this.getValueTotal('specialDeduction', this.form.specialDeduction)
-        let totalThreshold = this.getValueTotal('threshold', this.form.threshold)
-        let totalTaxAmount = totalGrossSalary - totalInsurancesPrice - totalSpecialDeduction - totalThreshold
-        let totalTax = this.calculationTax(totalTaxAmount)
-        let currentTax = totalTax - this.getValueTotal('tax')
-        this.form.dataList.push({
-          index: (length + 1) + '月份',
-          grossSalary: this.form.grossSalary,
-          insurancesPrice: this.form.insurancesPrice,
-          specialDeduction: this.form.specialDeduction,
-          threshold: this.form.threshold,
-          taxAmount: totalTaxAmount,
-          tax: currentTax,
-          afterTax: this.form.grossSalary - this.form.insurancesPrice - currentTax
-        })
-      }
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          action()
+        }
+      })
     },
     // 计算个税
     calculationTax (num) {
@@ -139,9 +164,9 @@ export default {
     },
     // 重置
     resetFormData () {
-      this.form.grossSalary = null
-      this.form.insurancesPrice = 0
-      this.form.specialDeduction = 0
+      // this.form.grossSalary = null
+      // this.form.insurancesPrice = 0
+      // this.form.specialDeduction = 0
       this.form.dataList = []
     }
   }
