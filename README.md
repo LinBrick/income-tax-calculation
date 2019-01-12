@@ -1,30 +1,16 @@
-# demo
+# 2019个人所得税计算
 
-> A Vue.js project
+> 按照最新的个人所得税算法计算每月应缴纳多少税
 
-## Build Setup
+## 建立设置
 
 ``` bash
-# install dependencies
+# 安装依赖关系
 npm install
 
-# serve with hot reload at localhost:8080
+# 在本机上localhost:8080上运行
 npm run dev
 
-# build for production with minification
+# 打包上线
 npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-
-# run unit tests
-npm run unit
-
-# run e2e tests
-npm run e2e
-
-# run all tests
-npm test
 ```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
