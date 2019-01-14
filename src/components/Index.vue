@@ -33,32 +33,29 @@
   </el-form>
   </el-col>
   <el-col :span="16">
-    <el-table :data="form.dataList" style="width: 100%">
-    <el-table-column  prop="index" label="月份" width="180"> </el-table-column>
-    <el-table-column label="税前工资">
+    <el-table :data="form.dataList" border :summary-method="getSummaries" show-summary style="width: 100%">
+    <el-table-column  prop="index" label="月份"> </el-table-column>
+    <el-table-column label="税前工资" prop="grossSalary">
       <template slot-scope="scope">
         {{ scope.row.grossSalary.toFixed(2) }}元
       </template>
     </el-table-column>
-    <el-table-column label="五险一金">
+    <el-table-column label="五险一金" prop="insurancesPrice">
       <template slot-scope="scope">
         {{ scope.row.insurancesPrice.toFixed(2) }}元
       </template>
     </el-table-column>
-    <el-table-column label="专项扣除">
+    <el-table-column label="专项扣除" prop="specialDeduction">
       <template slot-scope="scope">
         {{ scope.row.specialDeduction.toFixed(2) }}元
       </template>
     </el-table-column>
-    <!-- <el-table-column prop="grossSalary" label="税前工资"> </el-table-column>
-    <el-table-column prop="insurancesPrice" label="五险一金"> </el-table-column>
-    <el-table-column prop="specialDeduction" label="专项扣除"> </el-table-column> -->
-    <el-table-column label="最终个税">
+    <el-table-column label="最终个税" prop="tax">
       <template slot-scope="scope">
         {{ scope.row.tax.toFixed(2) }}元
       </template>
     </el-table-column>
-    <el-table-column label="税后工资">
+    <el-table-column label="税后工资" prop="afterTax">
       <template slot-scope="scope">
         {{ scope.row.afterTax.toFixed(2) }}元
       </template>
@@ -190,11 +187,39 @@ export default {
       return total + num
     },
     // 重置
-    resetFormData () {
+    resetFormData (param) {
       // this.form.grossSalary = null
       // this.form.insurancesPrice = 0
       // this.form.specialDeduction = 0
       this.form.dataList = []
+    },
+    // 获取统计
+    getSummaries (param) {
+      const { columns, data } = param
+      const sums = []
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '总计'
+          return
+        }
+        const values = data.map(item => Number(item[column.property]))
+        if (!values.every(value => isNaN(value))) {
+          sums[index] = values.reduce((prev, curr) => {
+            const value = Number(curr)
+            if (!isNaN(value)) {
+              return prev + curr
+            } else {
+              return prev
+            }
+          }, 0)
+          sums[index] = (sums[index]).toFixed(2)
+          sums[index] += ' 元'
+        } else {
+          sums[index] = '--'
+        }
+      })
+
+      return sums
     }
   }
 }
