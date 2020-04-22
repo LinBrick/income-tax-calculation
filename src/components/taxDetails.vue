@@ -16,7 +16,7 @@
         {{ scope.row.specialDeduction.toFixed(2) }}元
       </template>
     </el-table-column>
-    <el-table-column label="最终个税" prop="tax" fixed="right">
+    <el-table-column label="最终个税" prop="tax">
       <template slot-scope="scope">
         {{ scope.row.tax.toFixed(2) }}元
       </template>
