@@ -1,6 +1,6 @@
 <template>
   <el-table :data="dataList" :summary-method="getSummaries" border show-summary style="width: 100%">
-    <el-table-column prop="index" label="月份"/>
+    <el-table-column prop="index" label="月份" fixed="left"/>
     <el-table-column label="税前工资" prop="grossSalary">
       <template slot-scope="scope">
         {{ scope.row.grossSalary.toFixed(2) }}元
@@ -16,12 +16,12 @@
         {{ scope.row.specialDeduction.toFixed(2) }}元
       </template>
     </el-table-column>
-    <el-table-column label="最终个税" prop="tax">
+    <el-table-column label="最终个税" prop="tax" fixed="right">
       <template slot-scope="scope">
         {{ scope.row.tax.toFixed(2) }}元
       </template>
     </el-table-column>
-    <el-table-column label="税后工资" prop="afterTax">
+    <el-table-column label="税后工资" prop="afterTax" fixed="right">
       <template slot-scope="scope">
         {{ scope.row.afterTax.toFixed(2) }}元
       </template>

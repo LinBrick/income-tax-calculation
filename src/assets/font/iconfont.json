@@ -1,0 +1,30 @@
+{
+  "id": "1772611",
+  "name": "个税计算系统",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "3978294",
+      "name": "生成报表",
+      "font_class": "shengchengbaobiao",
+      "unicode": "e641",
+      "unicode_decimal": 58945
+    },
+    {
+      "icon_id": "7617413",
+      "name": "重置",
+      "font_class": "zhongzhi",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "12732490",
+      "name": "创建",
+      "font_class": "chuangjian",
+      "unicode": "e614",
+      "unicode_decimal": 58900
+    }
+  ]
+}

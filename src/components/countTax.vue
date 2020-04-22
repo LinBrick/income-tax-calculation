@@ -21,15 +21,42 @@
       </el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="build">生成一年</el-button>
-      <el-button type="primary" @click="onSubmit">单月创建</el-button>
-      <el-button @click="resetFormData">重置</el-button>
+      <el-button :size="buttonSize" type="primary" @click="build">
+        <template v-if="!isMobileWidth">
+          生成一年
+        </template>
+        <template v-else>
+          <i class="iconfont iconshengchengbaobiao" />
+        </template>
+      </el-button>
+      <el-button :size="buttonSize" type="primary" @click="onSubmit">
+        <template v-if="!isMobileWidth">
+          单月创建
+        </template>
+        <template v-else>
+          <i class="iconfont iconchuangjian" />
+        </template>
+      </el-button>
+      <el-button :size="buttonSize" @click="resetFormData">
+        <template v-if="!isMobileWidth">
+          重置
+        </template>
+        <template v-else>
+          <i class="iconfont iconzhongzhi" />
+        </template>
+      </el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script>
 export default {
+  props: {
+    winWidth: {
+      type: Number,
+      default: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+    }
+  },
   data() {
     return {
       form: {
@@ -54,6 +81,14 @@ export default {
           { type: 'number', message: '必须为数字值', trigger: 'change' }
         ]
       }
+    }
+  },
+  computed: {
+    isMobileWidth() {
+      return this.winWidth <= 720
+    },
+    buttonSize() {
+      return this.isMobileWidth ? 'mini' : ''
     }
   },
   watch: {
