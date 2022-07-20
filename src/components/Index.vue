@@ -1,10 +1,10 @@
 <template>
   <div class="box">
     <div class="box-count">
-      <count-tax :win-width="winWidth" @refreshData="updateDataList"/>
+      <count-tax :win-width="winWidth" :is-mobile-width="isMobileWidth" @refreshData="updateDataList"/>
     </div>
     <div class="box-details">
-      <tax-details :data-list="dataList"/>
+      <tax-details :data-list="dataList" :is-mobile-width="isMobileWidth"/>
     </div>
   </div>
 </template>
@@ -21,6 +21,11 @@ export default {
     return {
       dataList: [],
       winWidth: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+    }
+  },
+  computed: {
+    isMobileWidth() {
+      return this.winWidth <= 720
     }
   },
   mounted() {

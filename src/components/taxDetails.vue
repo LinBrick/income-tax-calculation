@@ -3,37 +3,48 @@
     <el-table-column prop="index" label="月份" fixed="left"/>
     <el-table-column label="税前工资" prop="grossSalary">
       <template slot-scope="scope">
-        {{ scope.row.grossSalary.toFixed(2) }}元
+        {{ scope.row.grossSalary | numberToFixed }}元
       </template>
     </el-table-column>
-    <el-table-column label="五险一金" prop="insurancesPrice">
+    <el-table-column v-if="!isMobileWidth" label="五险一金" prop="insurancesPrice">
       <template slot-scope="scope">
-        {{ scope.row.insurancesPrice.toFixed(2) }}元
+        {{ scope.row.insurancesPrice | numberToFixed }}元
       </template>
     </el-table-column>
-    <el-table-column label="专项扣除" prop="specialDeduction">
+    <el-table-column v-if="!isMobileWidth" label="专项扣除" prop="specialDeduction">
       <template slot-scope="scope">
-        {{ scope.row.specialDeduction.toFixed(2) }}元
+        {{ scope.row.specialDeduction | numberToFixed }}元
       </template>
     </el-table-column>
     <el-table-column label="最终个税" prop="tax">
       <template slot-scope="scope">
-        {{ scope.row.tax.toFixed(2) }}元
+        {{ scope.row.tax | numberToFixed }}元
       </template>
     </el-table-column>
     <el-table-column label="税后工资" prop="afterTax" fixed="right">
       <template slot-scope="scope">
-        {{ scope.row.afterTax.toFixed(2) }}元
+        {{ scope.row.afterTax | numberToFixed }}元
       </template>
     </el-table-column>
   </el-table>
 </template>
 <script>
 export default {
+  filters: {
+    numberToFixed(value, digit = 2) {
+      if (value < 0) value = 0
+      const result = value.toFixed(digit)
+      return result.replace('.00', '')
+    }
+  },
   props: {
     dataList: {
       type: Array,
       default: () => []
+    },
+    isMobileWidth: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {
@@ -56,7 +67,7 @@ export default {
               return prev
             }
           }, 0)
-          sums[index] = (sums[index]).toFixed(2)
+          sums[index] = (sums[index]).toFixed(2).replace('.00', '')
           sums[index] += ' 元'
         } else {
           sums[index] = '--'

@@ -1,22 +1,22 @@
 <template>
   <el-form ref="form" :rules="rules" :model="form" label-width="100px">
     <el-form-item label="税前工资" prop="grossSalary">
-      <el-input v-model.number="form.grossSalary" maxlength="12">
+      <el-input v-model.number="form.grossSalary" :size="inputSize" maxlength="12">
         <template slot="append">元</template>
       </el-input>
     </el-form-item>
     <el-form-item label="五险一金" prop="insurancesPrice">
-      <el-input v-model.number="form.insurancesPrice" maxlength="10">
+      <el-input v-model.number="form.insurancesPrice" :size="inputSize" maxlength="10">
         <template slot="append">元</template>
       </el-input>
     </el-form-item>
     <el-form-item label="专项扣除" prop="specialDeduction">
-      <el-input v-model.number="form.specialDeduction" maxlength="10">
+      <el-input v-model.number="form.specialDeduction" :size="inputSize" maxlength="10">
         <template slot="append">元</template>
       </el-input>
     </el-form-item>
     <el-form-item label="起征点">
-      <el-input v-model.number="form.threshold" disabled>
+      <el-input v-model.number="form.threshold" :size="inputSize" disabled>
         <template slot="append">元</template>
       </el-input>
     </el-form-item>
@@ -55,6 +55,10 @@ export default {
     winWidth: {
       type: Number,
       default: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+    },
+    isMobileWidth: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -84,8 +88,8 @@ export default {
     }
   },
   computed: {
-    isMobileWidth() {
-      return this.winWidth <= 720
+    inputSize() {
+      return this.isMobileWidth ? 'small' : ''
     },
     buttonSize() {
       return this.isMobileWidth ? 'mini' : ''
